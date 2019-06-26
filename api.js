@@ -42,9 +42,11 @@ app.post('/api/applicants', (req, res) => {
     const applicant = {
         firstName: req.body.firstName,
         lastName: req.body.lastName, 
-        DOB: req.body.DOB,
+        DOB: req.body.dOB,
         id: applicants.length + 1
-    }
+    };
+    applicants.push(applicant);
+    res.send(applicant);
 });
 
 const port = process.env.PORT || 3000;
