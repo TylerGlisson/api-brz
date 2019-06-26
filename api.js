@@ -1,3 +1,4 @@
+const Joi = require('joi');
 const express = require('express');
 const app = express();
 
@@ -39,6 +40,18 @@ app.get('/api/applicants/:id', (req, res) => {
 });
 
 app.post('/api/applicants', (req, res) => {
+    const schema = {
+        firstName: Joi.string().min(2).max(30).required(),
+        lastName: Joi.string().min(2).max(30).required(),
+        dOB: Joi.number().integer().min(1900).max(2019).required()
+    };
+
+    const result = Joi.validate(req.body, schema);
+
+    if (result.error) {
+        res.status(400).send(result.error.details[0].message);
+    }
+
     const applicant = {
         firstName: req.body.firstName,
         lastName: req.body.lastName, 
