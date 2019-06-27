@@ -1,8 +1,12 @@
 const Joi = require('joi');
+const logger = require('./logger');
 const express = require('express');
 const app = express();
 
 app.use(express.json());
+app.use(express.urlencoded());
+
+app.use(logger);
 
 const applicants = [
     {
@@ -35,15 +39,13 @@ app.get('/api/applicants', (req, res) => {
 
 app.get('/api/applicants/:id', (req, res) => {
     const applicant = applicants.find(app => app.id === parseInt(req.params.id));
-    if (!applicant) res.status(404).send('The applicant with the given id was not found');
+    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
     res.send(applicant);
 });
 
 app.post('/api/applicants', (req, res) => {
     const { error } = validateApplicant(req.body);
-    if (error) {
-        res.status(400).send(error.details[0].message);
-    }
+    if (error) return res.status(400).send(error.details[0].message);
 
     const applicant = {
         firstName: req.body.firstName,
@@ -57,12 +59,10 @@ app.post('/api/applicants', (req, res) => {
 
 app.put('/api/applicants/:id', (req, res) => {
     const applicant = applicants.find(app => app.id === parseInt(req.params.id));
-    if (!applicant) res.status(404).send('The applicant with the given id was not found');
+    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
     
     const { error } = validateApplicant(req.body);
-    if (error) {
-        res.status(400).send(error.details[0].message);
-    }
+    if (error) return res.status(400).send(error.details[0].message);
 
 
     applicant.firstName = req.body.firstName;
@@ -73,7 +73,7 @@ app.put('/api/applicants/:id', (req, res) => {
 
 app.delete('/api/applicants/:id', (req, res) => {
     const applicant = applicants.find(app => app.id === parseInt(req.params.id));
-    if (!applicant) res.status(404).send('The applicant with the given id was not found');
+    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
     
     // detlete
     const index = applicants.indexOf(applicant);
