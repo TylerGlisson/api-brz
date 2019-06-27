@@ -8,19 +8,19 @@ const applicants = [
     {
         firstName: 'Tyler',
         lastName: 'Glisson',
-        DOB: '08.26.1984',
+        dob: '08.26.1984',
         id: 0
     },
     {
         firstName: 'Omar',
         lastName: 'Little',
-        DOB: '01.01.1975',
+        dob: '01.01.1975',
         id: 1
     },
     {
         firstName: 'Jimmy',
         lastName: 'McNulty',
-        DOB: '01.01.1968',
+        dob: '01.01.1968',
         id: 2
     },
 ];
@@ -48,7 +48,7 @@ app.post('/api/applicants', (req, res) => {
     const applicant = {
         firstName: req.body.firstName,
         lastName: req.body.lastName, 
-        DOB: req.body.dOB,
+        dob: req.body.dOB,
         id: applicants.length + 1
     };
     applicants.push(applicant);
@@ -64,21 +64,30 @@ app.put('/api/applicants/:id', (req, res) => {
         res.status(400).send(error.details[0].message);
     }
 
-    const applicantUpdate = {
-        firstName: req.body.firstName,
-        lastName: req.body.lastName, 
-        DOB: req.body.dOB,
-        id: applicants.length + 1
-    };
-    applicants.applicant = applicantUpdate;
-    res.send(applicants.applicant);
+
+    applicant.firstName = req.body.firstName;
+    applicant.lastName = req.body.lastName;
+    applicant.dob = req.body.dob;
+    res.send(applicant);
+});
+
+app.delete('/api/applicants/:id', (req, res) => {
+    const applicant = applicants.find(app => app.id === parseInt(req.params.id));
+    if (!applicant) res.status(404).send('The applicant with the given id was not found');
+    
+    // detlete
+    const index = applicants.indexOf(applicant);
+    applicants.splice(index, 1);
+
+    // return the applicant
+    res.send(applicant);
 });
 
 function validateApplicant(app) {
     const schema = {
                 firstName: Joi.string().min(2).max(30).required(),
                 lastName: Joi.string().min(2).max(30).required(),
-                dOB: Joi.number().integer().min(1900).max(2019).required()
+                dob: Joi.number().integer().min(1900).max(2019).required()
     };
     return Joi.validate(app, schema);
  };
