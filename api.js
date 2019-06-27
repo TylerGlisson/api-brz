@@ -40,16 +40,9 @@ app.get('/api/applicants/:id', (req, res) => {
 });
 
 app.post('/api/applicants', (req, res) => {
-    const schema = {
-        firstName: Joi.string().min(2).max(30).required(),
-        lastName: Joi.string().min(2).max(30).required(),
-        dOB: Joi.number().integer().min(1900).max(2019).required()
-    };
-
-    const result = Joi.validate(req.body, schema);
-
-    if (result.error) {
-        res.status(400).send(result.error.details[0].message);
+    const { error } = validateApplicant(req.body);
+    if (error) {
+        res.status(400).send(error.details[0].message);
     }
 
     const applicant = {
@@ -61,6 +54,34 @@ app.post('/api/applicants', (req, res) => {
     applicants.push(applicant);
     res.send(applicant);
 });
+
+app.put('/api/applicants/:id', (req, res) => {
+    const applicant = applicants.find(app => app.id === parseInt(req.params.id));
+    if (!applicant) res.status(404).send('The applicant with the given id was not found');
+    
+    const { error } = validateApplicant(req.body);
+    if (error) {
+        res.status(400).send(error.details[0].message);
+    }
+
+    const applicantUpdate = {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName, 
+        DOB: req.body.dOB,
+        id: applicants.length + 1
+    };
+    applicants.applicant = applicantUpdate;
+    res.send(applicants.applicant);
+});
+
+function validateApplicant(app) {
+    const schema = {
+                firstName: Joi.string().min(2).max(30).required(),
+                lastName: Joi.string().min(2).max(30).required(),
+                dOB: Joi.number().integer().min(1900).max(2019).required()
+    };
+    return Joi.validate(app, schema);
+ };
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`listening on ${port}`)); 
