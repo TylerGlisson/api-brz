@@ -40,48 +40,22 @@ mongoose.connect('mongodb://localhost/playground',
         .then(() => console.log('Connected to DB'))
         .catch(err => console.error('Could not connect', err));
 
-const applicantSchema = mongoose.Schema({
+const Applicant = new mongoose.model('Applicant', new mongoose.Schema({
     firstName: String,
     lastName: String, 
     dob: Date,
     resumeOnFile: Boolean,
     date: { type: Date, default: Date.now }
-});
-
-const Applicant = mongoose.model('Applicant', applicantSchema);
+    }
+));
 
 async function getApplicants() {
-    const applicants = await Applicant;
+    const applicants = await Applicant.find();
     console.log(applicants);
+    return ;
 }
 
-async function createApplicant() {
-    const applicant = new Applicant({
-        firstName: 'Tyler',
-        lastName: 'Glisson',
-        dob: 1984-08-26,
-        resumeOnFile: true,
-        date: new Date()
-    });
-    try {
-        const result = await applicant.save();
-        console.log(result);
-    }
-    catch (err) {
-        console.log(err.message);
-    }
-}
-
-async function updateApplicant(id) {
-    const applicant = await Applicant.findByIdAndUpdate(id, {
-        $set: {
-            firstName: 'NewFirstName',
-            lastName: 'NewLastName'
-        }
-    });
-}
-
-updateApplicant('5d18e62a07b57fa6fe830373');
+getApplicants();
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`listening on ${port}`)); 
