@@ -1,10 +1,11 @@
+const mongoose = require('mongoose');
 const startupDebugger = require('debug')('app:startup');
 const dbDebugger = require('debug')('app:db');
 const config = require('config');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const Joi = require('joi');
-const logger = require('./logger');
+const logger = require('./middleware/logger');
 const applicants = require('./routes/applicants');
 const home = require('./routes/home');
 const express = require('express');
@@ -20,6 +21,8 @@ app.use(helmet());
 app.use(morgan('tiny'));
 app.use('/api/applicants', applicants);
 app.use('/', home);
+app.use(logger);
+
 
 // Configuration
 console.log('Application: ' + config.get('name'));
@@ -32,9 +35,11 @@ if (app.get('env') === 'development') {
 }
 
 // Db work...
-dbDebugger('Connected to the database...');
+mongoose.connect('mongodb://localhost/playground',
+    { useNewUrlParser: true, useFindAndModify: false })
+        .then(() => console.log('Connected to DB'))
+        .catch(err => console.error('Could not connect', err));
 
-app.use(logger);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`listening on ${port}`)); 
