@@ -1,74 +1,65 @@
+const mongoose = require('mongoose');
+const Joi = require('joi');
 const express = require('express');
 const router = express.Router();
 
-const applicants = [
-    {
-        firstName: 'Tyler',
-        lastName: 'Glisson',
-        dob: '08.26.1984',
-        id: 0
-    },
-    {
-        firstName: 'Omar',
-        lastName: 'Little',
-        dob: '01.01.1975',
-        id: 1
-    },
-    {
-        firstName: 'Jimmy',
-        lastName: 'McNulty',
-        dob: '01.01.1968',
-        id: 2
-    },
-];
+const Applicants = mongoose.model('Applicants', new mongoose.Schema({
+    firstName: String,
+    lastName: String, 
+    dob: Date,
+    resumeOnFile: Boolean,
+    date: { type: Date, default: Date.now }
+    }
+));
 
-router.get('/', (req, res) => {
-    res.send(applicants);
+router.get('/', async (req, res) => {
+    const applicantsList = await Applicants.find().sort('name');
+    res.send(applicantsList);
 });
 
-router.get('/:id', (req, res) => {
-    const applicant = applicants.find(app => app.id === parseInt(req.params.id));
-    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
+router.get('/:id', async (req, res) => {
+    const applicant = await Applicants.findById(req.params.id);
+
+    if (!applicant) return res.status(404).send
+        ('The applicant with the given ID was not found');
     res.send(applicant);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     const { error } = validateApplicant(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const applicant = {
+    let applicant = new Applicants({
         firstName: req.body.firstName,
         lastName: req.body.lastName, 
-        dob: req.body.dOB,
-        id: applicants.length + 1
-    };
-    applicants.push(applicant);
+        dob: req.body.dob,
+        resumeOnFile: req.body.resumeOnFile
+    });
+    applicant = await applicant.save();
     res.send(applicant);
 });
 
-router.put('/:id', (req, res) => {
-    const applicant = applicants.find(app => app.id === parseInt(req.params.id));
-    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
-    
+router.put('/:id', async (req, res) => {
     const { error } = validateApplicant(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
+    const applicant = await Applicants.findByIdAndUpdate(
+        req.params.id, { 
+            firstName: req.body.firstName, 
+            lastName: req.body.lastName,
+            dob: req.body.dob,
+            resumeOnFile: req.body.resumeOnFile
+        }, { new: true });
 
-    applicant.firstName = req.body.firstName;
-    applicant.lastName = req.body.lastName;
-    applicant.dob = req.body.dob;
+    if (!applicant) return res.status(404).send('The applicant with the given id was not found');
+
     res.send(applicant);
 });
 
-router.delete('/:id', (req, res) => {
-    const applicant = applicants.find(app => app.id === parseInt(req.params.id));
+router.delete('/:id', async (req, res) => {
+    const applicant = await Applicants.findByIdAndDelete(req.params.id);
     if (!applicant) return res.status(404).send('The applicant with the given id was not found');
     
-    // detlete
-    const index = applicants.indexOf(applicant);
-    applicants.splice(index, 1);
-
-    // return the applicant
     res.send(applicant);
 });
 
@@ -76,7 +67,7 @@ function validateApplicant(appli) {
     const schema = {
                 firstName: Joi.string().min(2).max(30).required(),
                 lastName: Joi.string().min(2).max(30).required(),
-                dob: Joi.number().integer().min(1900).max(2019).required()
+                dob: Joi.date().iso().required()
     };
     return Joi.validate(appli, schema);
  };
