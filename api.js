@@ -7,6 +7,7 @@ const logger = require('./middleware/logger');
 const applicants = require('./routes/applicants');
 const jobs = require('./routes/jobs');
 const home = require('./routes/home');
+const users = require('./routes/users');
 const express = require('express');
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.use(helmet());
 app.use(morgan('tiny'));
+app.use('/api/users', users);
 app.use('/api/applicants', applicants);
 app.use('/api/jobs', jobs);
 app.use('/', home);

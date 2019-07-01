@@ -1,16 +1,6 @@
-const mongoose = require('mongoose');
-const Joi = require('joi');
+const { Applicants, validateApplicant } = require('../models/applicants');
 const express = require('express');
 const router = express.Router();
-
-const Applicants = mongoose.model('Applicants', new mongoose.Schema({
-    firstName: String,
-    lastName: String, 
-    dob: Date,
-    resumeOnFile: Boolean,
-    date: { type: Date, default: Date.now }
-    }
-));
 
 router.get('/', async (req, res) => {
     const applicantsList = await Applicants.find().sort('name');
@@ -62,14 +52,5 @@ router.delete('/:id', async (req, res) => {
     
     res.send(applicant);
 });
-
-function validateApplicant(appli) {
-    const schema = {
-                firstName: Joi.string().min(2).max(30).required(),
-                lastName: Joi.string().min(2).max(30).required(),
-                dob: Joi.date().iso().required()
-    };
-    return Joi.validate(appli, schema);
- };
 
  module.exports = router;
