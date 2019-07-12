@@ -6,7 +6,8 @@ const Applicants = mongoose.model('Applicants', new mongoose.Schema({
     lastName: String, 
     dob: Date,
     resumeOnFile: Boolean,
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+    username: String
     }
 ));
 

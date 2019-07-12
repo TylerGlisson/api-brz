@@ -1,17 +1,31 @@
 const { Applicants, validateApplicant } = require('../models/applicants');
 const express = require('express');
 const router = express.Router();
+const redis = require('redis');
+const client = redis.createClient();
+const {promisify} = require('util');
+const hgetallAsync = promisify(client.hgetall).bind(client);
+const hmgetAsync = promisify(client.hmget).bind(client);
+
 
 router.get('/', async (req, res) => {
-    const applicantsList = await Applicants.find().sort('name');
-    res.send(applicantsList);
+    const applicantList = await hgetallAsync("applicants");
+    res.send(applicantList);
 });
 
 router.get('/:id', async (req, res) => {
-    const applicant = await Applicants.findById(req.params.id);
+    // Check Redis first
+    const applicant = await hmgetAsync('applicants', req.params.id);
 
-    if (!applicant) return res.status(404).send
-        ('The applicant with the given ID was not found');
+    if (!applicant[0]) {
+        // Then check Mongo
+        const applicantM = await Applicants.find({ username: req.params.id });
+        if (!applicantM[0]){
+            return res.status(404).send
+            ('The applicant with the given ID was not found');
+        }
+        res.send(applicantM);
+    }
     res.send(applicant);
 });
 

@@ -9,7 +9,10 @@ const jobs = require('./routes/jobs');
 const home = require('./routes/home');
 const users = require('./routes/users');
 const express = require('express');
+const redis = require('redis');
+const client = redis.createClient();
 const app = express();
+
 
 app.set('view engine', 'pug');
 app.set('views', './views'); // default
@@ -36,13 +39,16 @@ if (app.get('env') === 'development') {
     startupDebugger('Morgan enabled');
 }
 
-// Db work...
+// Mongoose/mongo DB connect
 mongoose.connect('mongodb://localhost/playground',
     { useNewUrlParser: true, useFindAndModify: false })
         .then(() => console.log('Connected to DB'))
         .catch(err => console.error('Could not connect', err));
 
-
+// Redis db connect
+client.on('connect', function() {
+    console.log('Redis server connected...')
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`listening on ${port}`)); 
