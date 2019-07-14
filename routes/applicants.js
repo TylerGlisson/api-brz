@@ -24,9 +24,10 @@ router.get('/:id', async (req, res) => {
             return res.status(404).send
             ('The applicant with the given ID was not found');
         }
-        res.send(applicantM);
+        client.hset('applicants', req.params.id, applicantM[0]._id);
+        res.send(applicantM[0]._id);
     }
-    res.send(applicant);
+    res.send(applicant[0]);
 });
 
 router.post('/', async (req, res) => {
