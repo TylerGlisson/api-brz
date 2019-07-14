@@ -1,4 +1,5 @@
 const auth = require('../middleware/auth.js');
+const admin = require('../middleware/admin');
 const { Job, validateJob } = require('../models/jobs')
 const express = require('express');
 const router = express.Router();
@@ -57,7 +58,7 @@ router.put('/:id', auth, async (req, res) => {
     res.send(job);
 });
 
-router.delete('/:id', auth, async (req, res) => {
+router.delete('/:id', [auth, admin], async (req, res) => {
     const job = await Job.findByIdAndDelete(req.params.id);
     if (!job) return res.status(404).send('The job with the given id was not found');
     
