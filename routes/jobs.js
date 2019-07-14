@@ -1,3 +1,4 @@
+const auth = require('../middleware/auth.js');
 const { Job, validateJob } = require('../models/jobs')
 const express = require('express');
 const router = express.Router();
@@ -15,7 +16,7 @@ router.get('/:id', async (req, res) => {
     res.send(job);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     const { error } = validateJob(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -34,7 +35,7 @@ router.post('/', async (req, res) => {
     res.send(job);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     const { error } = validateJob(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -56,7 +57,7 @@ router.put('/:id', async (req, res) => {
     res.send(job);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     const job = await Job.findByIdAndDelete(req.params.id);
     if (!job) return res.status(404).send('The job with the given id was not found');
     

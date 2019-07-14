@@ -1,3 +1,4 @@
+const auth = require('../middleware/auth');
 const { Applicants, validateApplicant } = require('../models/applicants');
 const express = require('express');
 const router = express.Router();
@@ -9,6 +10,7 @@ const hmgetAsync = promisify(client.hmget).bind(client);
 
 
 router.get('/', async (req, res) => {
+    
     const applicantList = await hgetallAsync("applicants");
     res.send(applicantList);
 });
@@ -30,7 +32,7 @@ router.get('/:id', async (req, res) => {
     res.send(applicant[0]);
 });
 
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
     const { error } = validateApplicant(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -44,7 +46,7 @@ router.post('/', async (req, res) => {
     res.send(applicant);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
     const { error } = validateApplicant(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -61,7 +63,7 @@ router.put('/:id', async (req, res) => {
     res.send(applicant);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
     const applicant = await Applicants.findByIdAndDelete(req.params.id);
     if (!applicant) return res.status(404).send('The applicant with the given id was not found');
     
