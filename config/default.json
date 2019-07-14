@@ -1,3 +1,4 @@
 {
-    "name": "api-brz"
+    "name": "api-brz",
+    "jwtPrivateKey": ""
 }

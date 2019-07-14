@@ -1,5 +1,6 @@
 {
     "mail": {
         "password": "PWD"
-    }
+    },
+    "jwtPrivateKey": "api_jwtPrivateKey"
 }

@@ -1,28 +1,33 @@
-const mongoose = require('mongoose');
-const Joi = require('joi');
+const { Applicants, validateApplicant } = require('../models/applicants');
 const express = require('express');
 const router = express.Router();
+const redis = require('redis');
+const client = redis.createClient();
+const {promisify} = require('util');
+const hgetallAsync = promisify(client.hgetall).bind(client);
+const hmgetAsync = promisify(client.hmget).bind(client);
 
-const Applicants = mongoose.model('Applicants', new mongoose.Schema({
-    firstName: String,
-    lastName: String, 
-    dob: Date,
-    resumeOnFile: Boolean,
-    date: { type: Date, default: Date.now }
-    }
-));
 
 router.get('/', async (req, res) => {
-    const applicantsList = await Applicants.find().sort('name');
-    res.send(applicantsList);
+    const applicantList = await hgetallAsync("applicants");
+    res.send(applicantList);
 });
 
 router.get('/:id', async (req, res) => {
-    const applicant = await Applicants.findById(req.params.id);
+    // Check Redis first
+    const applicant = await hmgetAsync('applicants', req.params.id);
 
-    if (!applicant) return res.status(404).send
-        ('The applicant with the given ID was not found');
-    res.send(applicant);
+    if (!applicant[0]) {
+        // Then check Mongo
+        const applicantM = await Applicants.find({ username: req.params.id });
+        if (!applicantM[0]){
+            return res.status(404).send
+            ('The applicant with the given ID was not found');
+        }
+        client.hset('applicants', req.params.id, applicantM[0]._id);
+        res.send(applicantM[0]._id);
+    }
+    res.send(applicant[0]);
 });
 
 router.post('/', async (req, res) => {
@@ -62,14 +67,5 @@ router.delete('/:id', async (req, res) => {
     
     res.send(applicant);
 });
-
-function validateApplicant(appli) {
-    const schema = {
-                firstName: Joi.string().min(2).max(30).required(),
-                lastName: Joi.string().min(2).max(30).required(),
-                dob: Joi.date().iso().required()
-    };
-    return Joi.validate(appli, schema);
- };
 
  module.exports = router;
